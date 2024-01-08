@@ -13,13 +13,13 @@ run "touch #{FILES.values.join(' ')}"
 
 APP_NAME = app_name
 RUBY_VERSION = '3.1'
-POSTGRES_VERSION= '14'
+POSTGRES_VERSION= '12.2'
 APP_DIR = '/app'
 USER_ID =  Process.uid || 1000
 GROUP_ID = Process.gid || 1000
 USER = 'user'
 
-PORTS = { RAILS: '3000', WEBPACKER: '3035' }.freeze
+PORTS = { RAILS: '3000' }.freeze
 
 DATABASE_USER = 'postgres'
 DATABASE_PASSWORD = 'password'
@@ -58,7 +58,6 @@ create_file FILES[:DOCKERFILE] do
 
     # Allow access to port 3000 & 3035
     EXPOSE #{PORTS[:RAILS]}
-    EXPOSE #{PORTS[:WEBPACKER]}
 
     # This is to fix an issue on Linux with permissions issues
     ARG USER_ID=#{USER_ID}
@@ -140,8 +139,9 @@ create_file FILES[:DOCKER_COMPOSE] do
 
         ports:
           - "#{PORTS[:RAILS]}:#{PORTS[:RAILS]}"
-          - "#{PORTS[:WEBPACKER]}:#{PORTS[:WEBPACKER]}"
 
+        stdin_open: true
+        tty: true
         depends_on:
           - db
 
@@ -150,7 +150,7 @@ create_file FILES[:DOCKER_COMPOSE] do
         environment:
           POSTGRES_PASSWORD: #{DATABASE_PASSWORD}
         volumes:
-          - db_data:/var/lib/postgresql/data
+          - db_pg_data:/var/lib/postgresql/data
 
 
     volumes:
