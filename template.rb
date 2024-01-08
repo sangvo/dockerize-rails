@@ -13,7 +13,7 @@ run "touch #{FILES.values.join(' ')}"
 
 APP_NAME = app_name
 RUBY_VERSION = '3.1'
-POSTGRES_VERSION= '12.2'
+POSTGRES_VERSION = '12.2'
 APP_DIR = '/app'
 USER_ID =  Process.uid || 1000
 GROUP_ID = Process.gid || 1000
@@ -65,7 +65,8 @@ create_file FILES[:DOCKERFILE] do
     ARG APP_DIR=#{APP_DIR}
 
     # Create a non-root user
-    RUN groupadd --gid $GROUP_ID #{USER}
+    # Issues mac: https://github.com/mxrch/GHunt/issues/62
+    RUN groupadd -o --gid $GROUP_ID #{USER}
     RUN useradd --no-log-init --uid $USER_ID --gid $GROUP_ID #{USER} --create-home
 
     # Remove existing running server
@@ -152,9 +153,8 @@ create_file FILES[:DOCKER_COMPOSE] do
         volumes:
           - db_pg_data:/var/lib/postgresql/data
 
-
     volumes:
-      db_data:
+      db_pg_data:
       node_modules:
 
   EOF
@@ -223,7 +223,6 @@ create_file FILES[:DATABASE_FILE] do
     development:
       <<: *default
       database: #{APP_NAME}_development
-
 
     test:
       <<: *default
