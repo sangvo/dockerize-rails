@@ -135,8 +135,9 @@ create_file FILES[:DOCKER_COMPOSE] do
 
         volumes:
           # make sure this lines up with APP_DIR above
-          - .:#{APP_DIR}
+          - .:#{APP_DIR}:delegated
           - node_modules:#{APP_DIR}/node_modules
+          - cache:/app/tmp/cache
 
         ports:
           - "#{PORTS[:RAILS]}:#{PORTS[:RAILS]}"
@@ -156,6 +157,7 @@ create_file FILES[:DOCKER_COMPOSE] do
     volumes:
       db_pg_data:
       node_modules:
+      cache:
 
   EOF
 end
