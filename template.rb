@@ -24,6 +24,18 @@ PORTS = { RAILS: '3000', WEBPACKER: '3035' }.freeze
 DATABASE_USER = 'postgres'
 DATABASE_PASSWORD = 'password'
 
+# Create package.json file
+unless File.exist?('package.json')
+  create_file 'package.json',
+              <<~JSON
+                {
+                  "name": "#{APP_NAME}",
+                  "private": "true"
+                }
+              JSON
+  run 'yarn install'
+end
+
 create_file FILES[:DOCKERFILE] do
   <<~EOF
     # Pre setup stuff
@@ -99,7 +111,7 @@ end
 
 create_file FILES[:DOCKER_COMPOSE] do
   <<~EOF
-  version: '3.2'
+    version: '3.2'
 
     services:
       web:
@@ -119,7 +131,6 @@ create_file FILES[:DOCKER_COMPOSE] do
             APP_DIR: #{APP_DIR}
 
         command: bash -c "rm -f tmp/pids/server.pid &&
-                          ./bin/webpack-dev-server --port #{PORTS[:WEBPACKER]} &
                           bundle exec rails server -p #{PORTS[:RAILS]} -b '0.0.0.0'"
 
         volumes:
@@ -211,11 +222,11 @@ create_file FILES[:DATABASE_FILE] do
 
     development:
       <<: *default
-      database: myapp_development
+      database: #{APP_NAME}_development
 
 
     test:
       <<: *default
-      database: myapp_test
+      database: #{APP_NAME}_test
   EOF
 end
